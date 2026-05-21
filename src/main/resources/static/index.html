@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dutch Vocabulary - Learn Dutch Words</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .app {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav button.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-item .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-item .label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Quiz */
+        .quiz-card {
+            text-align: center;
+        }
+
+        .quiz-progress {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .dutch-word {
+            font-size: 3rem;
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .word-meta {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .word-meta span {
+            padding: 5px 15px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .example {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .answer-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .answer-input.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .answer-input.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .result-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+
+        .result-message.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-message.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Quiz Results */
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            color: white;
+        }
+
+        .score-circle .score {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .score-circle .score-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .results-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item .word-info {
+            flex: 1;
+        }
+
+        .result-item .dutch {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result-item .english {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .result-item .status {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .result-item .status.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-item .status.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Word List */
+        .word-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filters select, .filters input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .filters select:focus, .filters input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .words-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .words-table th,
+        .words-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .words-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .words-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .difficulty-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .difficulty-badge.easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty-badge.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .difficulty-badge.hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-badge {
+            padding: 4px 12px;
+            background: #e9ecef;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .dutch-word {
+                font-size: 2rem;
+            }
+
+            .nav button {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .words-table th,
+            .words-table td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>🇳🇱 Dutch Vocabulary</h1>
+            <p>Learn Dutch words with interactive quizzes</p>
+        </header>
+
+        <nav class="nav">
+            <button id="nav-dashboard" class="active" onclick="showView('dashboard')">📊 Dashboard</button>
+            <button id="nav-quiz" onclick="showView('quiz')">🎯 Practice</button>
+            <button id="nav-words" onclick="showView('words')">📚 Word List</button>
+        </nav>
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="card">
+            <h2 style="margin-bottom: 20px; color: #333;">📊 Your Progress</h2>
+            <div id="stats-grid" class="stats-grid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading statistics...</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="showView('quiz')">🎯 Start Practice Quiz</button>
+            </div>
+        </div>
+
+        <!-- Quiz Setup View -->
+        <div id="view-quiz-setup" class="card quiz-card hidden">
+            <h2 style="margin-bottom: 30px; color: #333;">🎯 Start a Quiz</h2>
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 10px; color: #666;">Filter by category (optional):</label>
+                <select id="quiz-category" style="padding: 12px 20px; font-size: 1rem; border-radius: 10px; border: 2px solid #ddd; min-width: 200px;">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="startQuiz(false)">🎲 Random Quiz</button>
+                <button class="btn btn-primary" onclick="startQuiz(true)">🧠 Smart Quiz</button>
+            </div>
+            <p style="margin-top: 20px; color: #888; font-size: 0.9rem;">Smart Quiz focuses on words you need to practice more!</p>
+        </div>
+
+        <!-- Quiz Question View -->
+        <div id="view-quiz-question" class="card quiz-card hidden">
+            <div id="quiz-progress" class="quiz-progress"></div>
+            <div id="quiz-dutch-word" class="dutch-word"></div>
+            <div id="quiz-word-meta" class="word-meta"></div>
+            <div id="quiz-example" class="example hidden"></div>
+            <p style="color: #666; margin-bottom: 15px;">What is the English translation?</p>
+            <input type="text" id="quiz-answer" class="answer-input" placeholder="Type your answer..." onkeypress="handleKeyPress(event)">
+            <div id="quiz-result-message" class="result-message hidden"></div>
+            <div id="quiz-buttons">
+                <button id="btn-check" class="btn btn-primary" onclick="checkAnswer()">Check Answer</button>
+                <button id="btn-next" class="btn btn-primary hidden" onclick="nextQuestion()">Next Question →</button>
+            </div>
+            <button class="btn btn-secondary" style="margin-top: 10px;" onclick="quitQuiz()">✗ Quit Quiz</button>
+        </div>
+
+        <!-- Quiz Results View -->
+        <div id="view-quiz-results" class="card quiz-card hidden">
+            <h2 style="margin-bottom: 20px; color: #333;">🎉 Quiz Complete!</h2>
+            <div class="score-circle">
+                <div id="score-percentage" class="score">0%</div>
+                <div id="score-count" class="score-label">0/0 correct</div>
+            </div>
+            <div id="results-list" class="results-list"></div>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="showView('quiz')">🔄 New Quiz</button>
+                <button class="btn btn-secondary" onclick="showView('dashboard')">← Back to Dashboard</button>
+            </div>
+        </div>
+
+        <!-- Word List View -->
+        <div id="view-words" class="card hidden">
+            <div class="word-list-header">
+                <h2 style="color: #333;">📚 Vocabulary (<span id="word-count">0</span> words)</h2>
+                <div class="filters">
+                    <input type="text" id="search-input" placeholder="Search..." oninput="filterWords()">
+                    <select id="filter-category" onchange="filterWords()">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="filter-difficulty" onchange="filterWords()">
+                        <option value="">All Levels</option>
+                        <option value="EASY">Easy</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HARD">Hard</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="words-table">
+                    <thead>
+                        <tr>
+                            <th>Dutch</th>
+                            <th>English</th>
+                            <th>Category</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="words-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>Made with ❤️ to help you learn Dutch</footer>
+    </div>
+
+    <script>
+        // State
+        let allWords = [];
+        let categories = [];
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let quizResults = [];
+        let currentResult = null;
+
+        // API Base URL
+        const API_BASE = '/api';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatistics();
+            loadCategories();
+            loadWords();
+        });
+
+        // View Management
+        function showView(view) {
+            // Hide all views
+            document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dashboard').classList.add('active');
+                loadStatistics();
+            } else if (view === 'quiz') {
+                document.getElementById('view-quiz-setup').classList.remove('hidden');
+                document.getElementById('nav-quiz').classList.add('active');
+            } else if (view === 'words') {
+                document.getElementById('view-words').classList.remove('hidden');
+                document.getElementById('nav-words').classList.add('active');
+                filterWords();
+            }
+        }
+
+        // Statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE}/quiz/statistics`);
+                const stats = await response.json();
+
+                document.getElementById('stats-grid').innerHTML = `
+                    <div class="stat-item">
+                        <div class="number">${stats.totalWords}</div>
+                        <div class="label">Total Words</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${stats.wordsStudied}</div>
+                        <div class="label">Words Studied</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${stats.totalAttempts}</div>
+                        <div class="label">Total Attempts</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${stats.totalCorrect}</div>
+                        <div class="label">Correct Answers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${stats.overallSuccessRate.toFixed(0)}%</div>
+                        <div class="label">Success Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${stats.wordsToReview}</div>
+                        <div class="label">Words to Review</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load statistics:', error);
+            }
+        }
+
+        // Categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/words/categories`);
+                categories = await response.json();
+
+                const options = '<option value="">All categories</option>' +
+                    categories.map(c => `<option value="${c}">${c.charAt(0).toUpperCase() + c.slice(1)}</option>`).join('');
+
+                document.getElementById('quiz-category').innerHTML = options;
+                document.getElementById('filter-category').innerHTML = options.replace('All categories', 'All Categories');
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        // Words
+        async function loadWords() {
+            try {
+                const response = await fetch(`${API_BASE}/words`);
+                allWords = await response.json();
+                filterWords();
+            } catch (error) {
+                console.error('Failed to load words:', error);
+            }
+        }
+
+        function filterWords() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('filter-category').value;
+            const difficultyFilter = document.getElementById('filter-difficulty').value;
+
+            let filtered = allWords.filter(word => {
+                const matchesSearch = !searchTerm ||
+                    word.dutch.toLowerCase().includes(searchTerm) ||
+                    word.english.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || word.category === categoryFilter;
+                const matchesDifficulty = !difficultyFilter || word.difficulty === difficultyFilter;
+                return matchesSearch && matchesCategory && matchesDifficulty;
+            });
+
+            document.getElementById('word-count').textContent = filtered.length;
+
+            const tbody = document.getElementById('words-tbody');
+            tbody.innerHTML = filtered.map(word => `
+                <tr>
+                    <td>
+                        <strong>${word.dutch}</strong>
+                        ${word.pronunciation ? `<div style="font-size: 0.8rem; color: #888;">${word.pronunciation}</div>` : ''}
+                    </td>
+                    <td>
+                        ${word.english}
+                        ${word.example ? `<div style="font-size: 0.8rem; color: #888; font-style: italic;">"${word.example}"</div>` : ''}
+                    </td>
+                    <td>
+                        ${word.category ? `<span class="category-badge">${word.category}</span>` : ''}
+                    </td>
+                    <td>
+                        <span class="difficulty-badge ${word.difficulty.toLowerCase()}">${word.difficulty}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Quiz
+        async function startQuiz(smart) {
+            const category = document.getElementById('quiz-category').value;
+
+            try {
+                let url = smart
+                    ? `${API_BASE}/quiz/smart?count=10`
+                    : `${API_BASE}/quiz?count=10${category ? '&category=' + encodeURIComponent(category) : ''}`;
+
+                const response = await fetch(url);
+                quizQuestions = await response.json();
+
+                if (quizQuestions.length === 0) {
+                    alert('No questions available for this category.');
+                    return;
+                }
+
+                currentQuestionIndex = 0;
+                quizResults = [];
+                currentResult = null;
+
+                showQuizQuestion();
+            } catch (error) {
+                console.error('Failed to start quiz:', error);
+            }
+        }
+
+        function showQuizQuestion() {
+            document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-quiz-question').classList.remove('hidden');
+
+            const question = quizQuestions[currentQuestionIndex];
+
+            document.getElementById('quiz-progress').textContent =
+                `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+            document.getElementById('quiz-dutch-word').textContent = question.dutch;
+
+            let meta = '';
+            if (question.category) meta += `<span>${question.category}</span>`;
+            meta += `<span>${question.difficulty}</span>`;
+            document.getElementById('quiz-word-meta').innerHTML = meta;
+
+            const exampleEl = document.getElementById('quiz-example');
+            if (question.example) {
+                exampleEl.textContent = '💡 ' + question.example;
+                exampleEl.classList.remove('hidden');
+            } else {
+                exampleEl.classList.add('hidden');
+            }
+
+            // Reset input and buttons
+            const answerInput = document.getElementById('quiz-answer');
+            answerInput.value = '';
+            answerInput.className = 'answer-input';
+            answerInput.disabled = false;
+            answerInput.focus();
+
+            document.getElementById('quiz-result-message').classList.add('hidden');
+            document.getElementById('btn-check').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+        }
+
+        async function checkAnswer() {
+            const answer = document.getElementById('quiz-answer').value.trim();
+            if (!answer) return;
+
+            const question = quizQuestions[currentQuestionIndex];
+
+            try {
+                const response = await fetch(`${API_BASE}/quiz/answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ wordId: question.wordId, answer: answer })
+                });
+
+                currentResult = await response.json();
+                quizResults.push(currentResult);
+
+                const answerInput = document.getElementById('quiz-answer');
+                answerInput.classList.add(currentResult.correct ? 'correct' : 'incorrect');
+                answerInput.disabled = true;
+
+                const resultMessage = document.getElementById('quiz-result-message');
+                resultMessage.className = `result-message ${currentResult.correct ? 'correct' : 'incorrect'}`;
+                resultMessage.textContent = currentResult.correct
+                    ? '✓ Correct! Great job!'
+                    : `✗ Incorrect. The answer is: ${currentResult.correctAnswer}`;
+                resultMessage.classList.remove('hidden');
+
+                document.getElementById('btn-check').classList.add('hidden');
+                const nextBtn = document.getElementById('btn-next');
+                nextBtn.textContent = currentQuestionIndex + 1 >= quizQuestions.length ? 'See Results' : 'Next Question →';
+                nextBtn.classList.remove('hidden');
+            } catch (error) {
+                console.error('Failed to check answer:', error);
+            }
+        }
+
+        function nextQuestion() {
+            currentResult = null;
+
+            if (currentQuestionIndex + 1 >= quizQuestions.length) {
+                showQuizResults();
+            } else {
+                currentQuestionIndex++;
+                showQuizQuestion();
+            }
+        }
+
+        function showQuizResults() {
+            document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-quiz-results').classList.remove('hidden');
+
+            const correctCount = quizResults.filter(r => r.correct).length;
+            const percentage = Math.round((correctCount / quizResults.length) * 100);
+
+            document.getElementById('score-percentage').textContent = percentage + '%';
+            document.getElementById('score-count').textContent = `${correctCount}/${quizResults.length} correct`;
+
+            document.getElementById('results-list').innerHTML = quizResults.map(result => `
+                <div class="result-item">
+                    <div class="word-info">
+                        <div class="dutch">${result.dutch}</div>
+                        <div class="english">${result.correct ? result.correctAnswer : result.userAnswer + ' → ' + result.correctAnswer}</div>
+                    </div>
+                    <span class="status ${result.correct ? 'correct' : 'incorrect'}">
+                        ${result.correct ? '✓ Correct' : '✗ Wrong'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function quitQuiz() {
+            showView('quiz');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                if (currentResult) {
+                    nextQuestion();
+                } else {
+                    checkAnswer();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

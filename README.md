@@ -1,6 +1,6 @@
 # Dutch Vocabulary Learning Application
 
-A Spring Boot REST API for learning Dutch vocabulary with English translations.
+A Spring Boot REST API for learning Dutch vocabulary with English translations, including a built-in web frontend.
 
 ## Features
 
@@ -9,6 +9,7 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations.
 - **Progress Tracking**: Track your learning progress and statistics
 - **Categories**: Words organized by categories (greetings, verbs, nouns, etc.)
 - **Difficulty Levels**: EASY, MEDIUM, HARD
+- **Web Frontend**: Built-in responsive web UI
 
 ## Quick Start
 
@@ -26,7 +27,19 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations.
 ./mvnw spring-boot:run
 ```
 
-The API will be available at `http://localhost:8080`
+The application will be available at:
+- **Web UI**: http://localhost:8080
+- **API**: http://localhost:8080/api
+
+## Web Interface
+
+Simply open http://localhost:8080 in your browser to access the interactive Dutch vocabulary learning app with:
+
+- 📊 **Dashboard** - View your learning statistics
+- 🎯 **Practice** - Take quizzes (random or smart/spaced repetition)
+- 📚 **Word List** - Browse and search all vocabulary words
+
+![Dashboard](docs/dashboard.png)
 
 ## API Endpoints
 
@@ -133,4 +146,3 @@ src/main/java/com/dutchvocabulary/
 - [ ] Implement audio pronunciation
 - [ ] Add more vocabulary categories
 - [ ] Export/import vocabulary lists
-
