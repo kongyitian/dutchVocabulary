@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
  * Entity tracking user's learning progress for each word.
  */
 @Entity
-@Table(name = "learning_progress")
+@Table(name = "learning_progress", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "word_id"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,6 +24,10 @@ public class LearningProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "word_id", nullable = false)
@@ -68,4 +74,5 @@ public class LearningProgress {
         this.lastPracticed = LocalDateTime.now();
     }
 }
+
 

@@ -2,10 +2,14 @@ package com.dutchvocabulary.service;
 
 import com.dutchvocabulary.dto.*;
 import com.dutchvocabulary.model.LearningProgress;
+import com.dutchvocabulary.model.User;
 import com.dutchvocabulary.model.VocabularyWord;
 import com.dutchvocabulary.repository.LearningProgressRepository;
+import com.dutchvocabulary.repository.UserRepository;
 import com.dutchvocabulary.repository.VocabularyWordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +24,19 @@ public class QuizService {
 
     private final VocabularyWordRepository wordRepository;
     private final LearningProgressRepository progressRepository;
+    private final UserRepository userRepository;
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+        return userRepository.findByUsername(authentication.getName()).orElse(null);
+    }
 
     /**
-     * Generate a quiz with random words.
+     * Generate a quiz with random words and multiple choice options.
      */
     public List<QuizQuestionDTO> generateQuiz(int count, String category, String difficulty) {
         List<VocabularyWord> words;
@@ -41,11 +55,12 @@ public class QuizService {
         }
 
         // Shuffle and limit
+        List<VocabularyWord> allWords = new ArrayList<>(words);
         Collections.shuffle(words);
         words = words.stream().limit(count).collect(Collectors.toList());
 
         return words.stream()
-                .map(this::toQuizQuestion)
+                .map(w -> toQuizQuestionWithOptions(w, allWords))
                 .collect(Collectors.toList());
     }
 
@@ -53,34 +68,38 @@ public class QuizService {
      * Generate a smart quiz focusing on weak words (spaced repetition).
      */
     public List<QuizQuestionDTO> generateSmartQuiz(int count) {
-        // Get words that need more practice (success rate < 70%)
-        List<LearningProgress> weakProgress = progressRepository.findWeakWords(0.7);
-        List<VocabularyWord> weakWords = weakProgress.stream()
-                .map(LearningProgress::getWord)
-                .collect(Collectors.toList());
+        User user = getCurrentUser();
+        List<VocabularyWord> allWords = wordRepository.findAll();
 
-        // Get least recently practiced words
-        List<LearningProgress> leastRecent = progressRepository.findLeastRecentlyPracticed();
-        List<VocabularyWord> leastRecentWords = leastRecent.stream()
-                .map(LearningProgress::getWord)
-                .collect(Collectors.toList());
-
-        // Combine weak words first, then least recent, then random
         List<VocabularyWord> quizWords = new ArrayList<>();
 
-        // Add weak words (priority)
-        for (VocabularyWord word : weakWords) {
-            if (quizWords.size() >= count) break;
-            if (!quizWords.contains(word)) {
-                quizWords.add(word);
-            }
-        }
+        if (user != null) {
+            // Get words that need more practice (success rate < 70%)
+            List<LearningProgress> weakProgress = progressRepository.findWeakWordsByUser(user.getId(), 0.7);
+            List<VocabularyWord> weakWords = weakProgress.stream()
+                    .map(LearningProgress::getWord)
+                    .collect(Collectors.toList());
 
-        // Add least recent
-        for (VocabularyWord word : leastRecentWords) {
-            if (quizWords.size() >= count) break;
-            if (!quizWords.contains(word)) {
-                quizWords.add(word);
+            // Get least recently practiced words
+            List<LearningProgress> leastRecent = progressRepository.findLeastRecentlyPracticedByUser(user.getId());
+            List<VocabularyWord> leastRecentWords = leastRecent.stream()
+                    .map(LearningProgress::getWord)
+                    .collect(Collectors.toList());
+
+            // Add weak words (priority)
+            for (VocabularyWord word : weakWords) {
+                if (quizWords.size() >= count) break;
+                if (!quizWords.contains(word)) {
+                    quizWords.add(word);
+                }
+            }
+
+            // Add least recent
+            for (VocabularyWord word : leastRecentWords) {
+                if (quizWords.size() >= count) break;
+                if (!quizWords.contains(word)) {
+                    quizWords.add(word);
+                }
             }
         }
 
@@ -98,7 +117,7 @@ public class QuizService {
         Collections.shuffle(quizWords);
 
         return quizWords.stream()
-                .map(this::toQuizQuestion)
+                .map(w -> toQuizQuestionWithOptions(w, allWords))
                 .collect(Collectors.toList());
     }
 
@@ -107,24 +126,35 @@ public class QuizService {
      */
     @Transactional
     public QuizResultDTO submitAnswer(QuizAnswerDTO answerDTO) {
+        User user = getCurrentUser();
+
         VocabularyWord word = wordRepository.findById(answerDTO.getWordId())
                 .orElseThrow(() -> new RuntimeException("Word not found: " + answerDTO.getWordId()));
 
         // Check if answer is correct (case-insensitive, trim whitespace)
         boolean isCorrect = word.getEnglish().trim().equalsIgnoreCase(answerDTO.getAnswer().trim());
 
-        // Get or create progress record
-        LearningProgress progress = progressRepository.findByWord(word)
-                .orElseGet(() -> LearningProgress.builder()
-                        .word(word)
-                        .correctCount(0)
-                        .attemptCount(0)
-                        .streak(0)
-                        .build());
+        int currentStreak = 0;
+        double successRate = 0.0;
 
-        // Record the attempt
-        progress.recordAttempt(isCorrect);
-        progressRepository.save(progress);
+        if (user != null) {
+            // Get or create progress record for this user
+            LearningProgress progress = progressRepository.findByUserAndWord(user, word)
+                    .orElseGet(() -> LearningProgress.builder()
+                            .user(user)
+                            .word(word)
+                            .correctCount(0)
+                            .attemptCount(0)
+                            .streak(0)
+                            .build());
+
+            // Record the attempt
+            progress.recordAttempt(isCorrect);
+            progressRepository.save(progress);
+
+            currentStreak = progress.getStreak();
+            successRate = progress.getSuccessRate();
+        }
 
         return QuizResultDTO.builder()
                 .wordId(word.getId())
@@ -132,8 +162,8 @@ public class QuizService {
                 .correctAnswer(word.getEnglish())
                 .userAnswer(answerDTO.getAnswer())
                 .correct(isCorrect)
-                .currentStreak(progress.getStreak())
-                .successRate(progress.getSuccessRate())
+                .currentStreak(currentStreak)
+                .successRate(successRate)
                 .build();
     }
 
@@ -148,15 +178,28 @@ public class QuizService {
     }
 
     /**
-     * Get learning statistics.
+     * Get learning statistics for current user.
      */
     public StatisticsDTO getStatistics() {
+        User user = getCurrentUser();
         Long totalWords = wordRepository.count();
-        Long wordsStudied = progressRepository.getWordsStudied();
-        Long totalAttempts = progressRepository.getTotalAttempts();
-        Long totalCorrect = progressRepository.getTotalCorrect();
-        Double overallSuccessRate = progressRepository.getOverallSuccessRate();
-        Long wordsToReview = (long) progressRepository.findWeakWords(0.7).size();
+
+        if (user == null) {
+            return StatisticsDTO.builder()
+                    .totalWords(totalWords)
+                    .wordsStudied(0L)
+                    .totalAttempts(0L)
+                    .totalCorrect(0L)
+                    .overallSuccessRate(0.0)
+                    .wordsToReview(0L)
+                    .build();
+        }
+
+        Long wordsStudied = progressRepository.getWordsStudiedByUser(user.getId());
+        Long totalAttempts = progressRepository.getTotalAttemptsByUser(user.getId());
+        Long totalCorrect = progressRepository.getTotalCorrectByUser(user.getId());
+        Double overallSuccessRate = progressRepository.getOverallSuccessRateByUser(user.getId());
+        Long wordsToReview = (long) progressRepository.findWeakWordsByUser(user.getId(), 0.7).size();
 
         return StatisticsDTO.builder()
                 .totalWords(totalWords)
@@ -168,7 +211,36 @@ public class QuizService {
                 .build();
     }
 
-    private QuizQuestionDTO toQuizQuestion(VocabularyWord word) {
+    private QuizQuestionDTO toQuizQuestionWithOptions(VocabularyWord word, List<VocabularyWord> allWords) {
+        // Generate 4 options including the correct answer
+        List<String> options = new ArrayList<>();
+        options.add(word.getEnglish());
+
+        // Add 3 random wrong answers
+        List<VocabularyWord> otherWords = allWords.stream()
+                .filter(w -> !w.getId().equals(word.getId()))
+                .collect(Collectors.toList());
+        Collections.shuffle(otherWords);
+
+        for (int i = 0; i < Math.min(3, otherWords.size()); i++) {
+            String wrongAnswer = otherWords.get(i).getEnglish();
+            if (!options.contains(wrongAnswer)) {
+                options.add(wrongAnswer);
+            }
+        }
+
+        // Make sure we have 4 options
+        while (options.size() < 4 && options.size() < allWords.size()) {
+            for (VocabularyWord w : otherWords) {
+                if (!options.contains(w.getEnglish())) {
+                    options.add(w.getEnglish());
+                    break;
+                }
+            }
+        }
+
+        Collections.shuffle(options);
+
         return QuizQuestionDTO.builder()
                 .wordId(word.getId())
                 .dutch(word.getDutch())
@@ -176,7 +248,7 @@ public class QuizService {
                 .difficulty(word.getDifficulty().name())
                 .pronunciation(word.getPronunciation())
                 .example(word.getExample())
+                .options(options)
                 .build();
     }
 }
-

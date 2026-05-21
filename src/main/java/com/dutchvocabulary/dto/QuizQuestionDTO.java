@@ -5,8 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
- * DTO for quiz questions - shows the Dutch word and expects English answer.
+ * DTO for quiz questions - shows the Dutch word with multiple choice options.
  */
 @Data
 @NoArgsConstructor
@@ -20,5 +22,7 @@ public class QuizQuestionDTO {
     private String difficulty;
     private String pronunciation;
     private String example;  // Optional hint
+    private List<String> options;  // 4 multiple choice options
 }
+
 
