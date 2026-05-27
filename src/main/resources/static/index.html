@@ -225,6 +225,53 @@
             margin: 10px 0;
         }
 
+        .streak-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff9600 0%, #ff6b00 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .streak-fire { font-size: 2.5rem; }
+        .streak-info { text-align: center; }
+        .streak-number { font-size: 1.8rem; font-weight: 800; }
+        .streak-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
+        .streak-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.3); }
+
+        .achievements-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        .achievements-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .achievement-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .achievement-icon { font-size: 1.5rem; }
+        .achievement-info { text-align: left; }
+        .achievement-title { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+        .achievement-desc { font-size: 0.75rem; color: var(--gray-dark); }
+
         .actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
 
         @media (max-width: 600px) {
@@ -430,6 +477,47 @@
                 document.getElementById('stat-correct').textContent = stats.totalCorrect || 0;
                 document.getElementById('stat-rate').textContent = (stats.overallSuccessRate || 0).toFixed(0) + '%';
             } catch (error) { console.error('Failed to load statistics:', error); }
+
+            // Load achievements and streaks
+            loadAchievements();
+        }
+
+        async function loadAchievements() {
+            try {
+                // Load streak info
+                const streakResponse = await fetch(`${API_BASE}/achievements/summary`, { headers: { 'Authorization': `Bearer ${token}` }});
+                if (streakResponse.ok) {
+                    const summary = await streakResponse.json();
+                    document.getElementById('daily-streak').textContent = summary.currentStreak || 0;
+                    document.getElementById('longest-streak').textContent = summary.longestStreak || 0;
+                    document.getElementById('achievement-count').textContent = summary.achievementCount || 0;
+                }
+
+                // Load recent achievements
+                const achievementsResponse = await fetch(`${API_BASE}/achievements`, { headers: { 'Authorization': `Bearer ${token}` }});
+                if (achievementsResponse.ok) {
+                    const achievements = await achievementsResponse.json();
+                    const section = document.getElementById('achievements-section');
+                    const list = document.getElementById('achievements-list');
+
+                    if (achievements && achievements.length > 0) {
+                        section.classList.remove('hidden');
+                        list.innerHTML = achievements.slice(0, 5).map(a => `
+                            <div class="achievement-badge">
+                                <span class="achievement-icon">${a.icon || '🏆'}</span>
+                                <div class="achievement-info">
+                                    <div class="achievement-title">${a.title}</div>
+                                    <div class="achievement-desc">${a.description}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load achievements:', error);
+            }
         }
 
         async function startQuiz() {

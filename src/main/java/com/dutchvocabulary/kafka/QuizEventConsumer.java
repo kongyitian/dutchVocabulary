@@ -3,15 +3,18 @@ package com.dutchvocabulary.kafka;
 import com.dutchvocabulary.event.AchievementEvent;
 import com.dutchvocabulary.event.QuizAttemptEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 /**
  * Kafka consumer for quiz and achievement events.
  * Processes events for analytics and notifications.
+ * Only active when Kafka is enabled.
  */
 @Service
 @Slf4j
+@ConditionalOnProperty(name = "spring.kafka.enabled", havingValue = "true", matchIfMissing = true)
 public class QuizEventConsumer {
 
     /**

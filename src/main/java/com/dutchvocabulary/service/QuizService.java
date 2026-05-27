@@ -33,6 +33,7 @@ public class QuizService {
     private final LearningProgressRepository progressRepository;
     private final UserRepository userRepository;
     private final QuizEventProducer eventProducer;
+    private final AchievementService achievementService;
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -166,9 +167,14 @@ public class QuizService {
             currentStreak = progress.getStreak();
             successRate = progress.getSuccessRate();
 
-            // 🔥 Publish Kafka events
+            // Record daily practice (for streak tracking)
+            achievementService.recordDailyPractice(user);
+
+            // Check and award achievements
+            achievementService.checkQuizAchievements(user, isCorrect, previousStreak, currentStreak, progress);
+
+            // Publish Kafka event for analytics
             publishQuizAttemptEvent(user, word, answerDTO.getAnswer(), isCorrect, currentStreak, successRate);
-            checkAndPublishAchievements(user, isCorrect, previousStreak, currentStreak, progress);
         }
 
         return QuizResultDTO.builder()
@@ -206,51 +212,6 @@ public class QuizService {
         } catch (Exception e) {
             log.warn("Failed to publish quiz attempt event (Kafka may be unavailable): {}", e.getMessage());
         }
-    }
-
-    /**
-     * Check for achievements and publish events to Kafka.
-     */
-    private void checkAndPublishAchievements(User user, boolean correct, int previousStreak,
-                                              int currentStreak, LearningProgress progress) {
-        try {
-            // First correct answer
-            if (correct && progress.getCorrectCount() == 1) {
-                publishAchievement(user, "FIRST_CORRECT", "You got your first correct answer! 🎉");
-            }
-
-            // Streak milestones
-            if (currentStreak == 5 && previousStreak < 5) {
-                publishAchievement(user, "STREAK_5", "Amazing! 5 correct answers in a row! 🔥");
-            }
-            if (currentStreak == 10 && previousStreak < 10) {
-                publishAchievement(user, "STREAK_10", "Incredible! 10 correct answers in a row! 🏆");
-            }
-            if (currentStreak == 25 && previousStreak < 25) {
-                publishAchievement(user, "STREAK_25", "Legendary! 25 correct answers in a row! 👑");
-            }
-
-            // Word mastered (90%+ success rate with 10+ attempts)
-            if (progress.getAttemptCount() >= 10 && progress.getSuccessRate() >= 90) {
-                publishAchievement(user, "WORD_MASTERED",
-                        "You've mastered the word '" + progress.getWord().getDutch() + "'! 📚");
-            }
-        } catch (Exception e) {
-            log.warn("Failed to publish achievement event (Kafka may be unavailable): {}", e.getMessage());
-        }
-    }
-
-    private void publishAchievement(User user, String type, String message) {
-        AchievementEvent event = AchievementEvent.builder()
-                .eventId(UUID.randomUUID().toString())
-                .userId(user.getId())
-                .username(user.getUsername())
-                .achievementType(type)
-                .message(message)
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        eventProducer.sendAchievementEvent(event);
     }
 
     /**

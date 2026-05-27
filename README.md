@@ -9,8 +9,10 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations, 
 - **Progress Tracking**: Track your learning progress and statistics
 - **Categories**: Words organized by categories (greetings, verbs, nouns, etc.)
 - **Difficulty Levels**: EASY, MEDIUM, HARD
-- **Web Frontend**: Built-in responsive web UI
-- **Kafka Integration**: Event streaming for quiz analytics and achievements
+- **Web Frontend**: Built-in responsive Duolingo-style web UI
+- **Achievements System**: Earn badges for streaks and milestones
+- **Daily Streaks**: Track consecutive days of practice
+- **Kafka Integration**: Event streaming for quiz analytics (optional)
 
 ## Quick Start
 
@@ -47,7 +49,10 @@ The application will be available at:
 
 Simply open http://localhost:8080 in your browser to access the interactive Dutch vocabulary learning app with:
 
-- 📊 **Dashboard** - View your learning statistics
+- 📊 **Dashboard** - View your learning statistics and daily streak
+- 🏆 **Achievements** - Earn badges for milestones (5-streak, 10-streak, word mastery, etc.)
+- 🔥 **Daily Streaks** - Track consecutive days of practice
+- 🎯 **Practice** - Take quizzes (random or smart/spaced repetition)
 - 🎯 **Practice** - Take quizzes (random or smart/spaced repetition)
 - 📚 **Word List** - Browse and search all vocabulary words
 
