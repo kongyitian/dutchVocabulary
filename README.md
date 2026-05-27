@@ -1,6 +1,6 @@
 # Dutch Vocabulary Learning Application
 
-A Spring Boot REST API for learning Dutch vocabulary with English translations, including a built-in web frontend.
+A Spring Boot REST API for learning Dutch vocabulary with English translations, featuring Kafka event streaming for analytics and achievements.
 
 ## Features
 
@@ -10,12 +10,24 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations, 
 - **Categories**: Words organized by categories (greetings, verbs, nouns, etc.)
 - **Difficulty Levels**: EASY, MEDIUM, HARD
 - **Web Frontend**: Built-in responsive web UI
+- **Kafka Integration**: Event streaming for quiz analytics and achievements
 
 ## Quick Start
 
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.6+
+- Docker (for Kafka)
+
+### Run Kafka with Docker
+
+```bash
+# Start Kafka and Zookeeper
+docker-compose up -d
+
+# Verify containers are running
+docker ps
+```
 
 ### Run the Application
 
@@ -141,8 +153,32 @@ src/main/java/com/dutchvocabulary/
 
 ## Next Steps
 
-- [ ] Add user authentication (Spring Security)
-- [ ] Add frontend (React/Vue/Thymeleaf)
+- [x] Add user authentication (Spring Security)
+- [x] Add Kafka event streaming
 - [ ] Implement audio pronunciation
 - [ ] Add more vocabulary categories
 - [ ] Export/import vocabulary lists
+
+## Kafka Events
+
+When users answer quiz questions, events are published to Kafka topics:
+
+### Topics
+| Topic | Description |
+|-------|-------------|
+| `quiz-attempts` | Every quiz answer (correct/incorrect, streak, success rate) |
+| `achievements` | Achievement unlocks (FIRST_CORRECT, STREAK_5, STREAK_10, WORD_MASTERED) |
+
+### Sample Log Output
+```
+📤 Sending quiz attempt event: userId=1, wordId=5, correct=true
+📊 [Analytics] Quiz attempt received:
+   User: john | Word: hallo (hello) | Answer: hello | Correct: ✅
+   Streak: 5 | Success Rate: 85.0%
+🏆 [Achievement] john earned: STREAK_5
+   Message: Amazing! 5 correct answers in a row! 🔥
+```
+
+### Running Without Kafka
+The app will still work without Kafka - events will simply not be published (with a warning log).
+

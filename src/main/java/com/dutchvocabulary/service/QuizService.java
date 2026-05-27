@@ -1,6 +1,9 @@
 package com.dutchvocabulary.service;
 
 import com.dutchvocabulary.dto.*;
+import com.dutchvocabulary.event.AchievementEvent;
+import com.dutchvocabulary.event.QuizAttemptEvent;
+import com.dutchvocabulary.kafka.QuizEventProducer;
 import com.dutchvocabulary.model.LearningProgress;
 import com.dutchvocabulary.model.User;
 import com.dutchvocabulary.model.VocabularyWord;
@@ -8,23 +11,28 @@ import com.dutchvocabulary.repository.LearningProgressRepository;
 import com.dutchvocabulary.repository.UserRepository;
 import com.dutchvocabulary.repository.VocabularyWordRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class QuizService {
 
     private final VocabularyWordRepository wordRepository;
     private final LearningProgressRepository progressRepository;
     private final UserRepository userRepository;
+    private final QuizEventProducer eventProducer;
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -136,6 +144,7 @@ public class QuizService {
 
         int currentStreak = 0;
         double successRate = 0.0;
+        int previousStreak = 0;
 
         if (user != null) {
             // Get or create progress record for this user
@@ -148,12 +157,18 @@ public class QuizService {
                             .streak(0)
                             .build());
 
+            previousStreak = progress.getStreak();
+
             // Record the attempt
             progress.recordAttempt(isCorrect);
             progressRepository.save(progress);
 
             currentStreak = progress.getStreak();
             successRate = progress.getSuccessRate();
+
+            // 🔥 Publish Kafka events
+            publishQuizAttemptEvent(user, word, answerDTO.getAnswer(), isCorrect, currentStreak, successRate);
+            checkAndPublishAchievements(user, isCorrect, previousStreak, currentStreak, progress);
         }
 
         return QuizResultDTO.builder()
@@ -165,6 +180,77 @@ public class QuizService {
                 .currentStreak(currentStreak)
                 .successRate(successRate)
                 .build();
+    }
+
+    /**
+     * Publish quiz attempt event to Kafka.
+     */
+    private void publishQuizAttemptEvent(User user, VocabularyWord word, String userAnswer,
+                                          boolean correct, int streak, double successRate) {
+        try {
+            QuizAttemptEvent event = QuizAttemptEvent.builder()
+                    .eventId(UUID.randomUUID().toString())
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .wordId(word.getId())
+                    .dutchWord(word.getDutch())
+                    .correctAnswer(word.getEnglish())
+                    .userAnswer(userAnswer)
+                    .correct(correct)
+                    .currentStreak(streak)
+                    .successRate(successRate)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            eventProducer.sendQuizAttemptEvent(event);
+        } catch (Exception e) {
+            log.warn("Failed to publish quiz attempt event (Kafka may be unavailable): {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Check for achievements and publish events to Kafka.
+     */
+    private void checkAndPublishAchievements(User user, boolean correct, int previousStreak,
+                                              int currentStreak, LearningProgress progress) {
+        try {
+            // First correct answer
+            if (correct && progress.getCorrectCount() == 1) {
+                publishAchievement(user, "FIRST_CORRECT", "You got your first correct answer! 🎉");
+            }
+
+            // Streak milestones
+            if (currentStreak == 5 && previousStreak < 5) {
+                publishAchievement(user, "STREAK_5", "Amazing! 5 correct answers in a row! 🔥");
+            }
+            if (currentStreak == 10 && previousStreak < 10) {
+                publishAchievement(user, "STREAK_10", "Incredible! 10 correct answers in a row! 🏆");
+            }
+            if (currentStreak == 25 && previousStreak < 25) {
+                publishAchievement(user, "STREAK_25", "Legendary! 25 correct answers in a row! 👑");
+            }
+
+            // Word mastered (90%+ success rate with 10+ attempts)
+            if (progress.getAttemptCount() >= 10 && progress.getSuccessRate() >= 90) {
+                publishAchievement(user, "WORD_MASTERED",
+                        "You've mastered the word '" + progress.getWord().getDutch() + "'! 📚");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to publish achievement event (Kafka may be unavailable): {}", e.getMessage());
+        }
+    }
+
+    private void publishAchievement(User user, String type, String message) {
+        AchievementEvent event = AchievementEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .achievementType(type)
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        eventProducer.sendAchievementEvent(event);
     }
 
     /**
@@ -252,3 +338,4 @@ public class QuizService {
                 .build();
     }
 }
+
