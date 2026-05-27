@@ -18,6 +18,15 @@ public class QuizEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final boolean kafkaEnabled;
 
+    /**
+     * Default constructor for when Kafka is disabled.
+     */
+    public QuizEventProducer() {
+        this.kafkaTemplate = null;
+        this.kafkaEnabled = false;
+        log.info("📭 Kafka is not available - events will not be published");
+    }
+
     @Autowired(required = false)
     public QuizEventProducer(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
