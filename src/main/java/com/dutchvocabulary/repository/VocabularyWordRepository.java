@@ -24,7 +24,8 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
     @Query("SELECT v FROM VocabularyWord v WHERE LOWER(v.dutch) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(v.english) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<VocabularyWord> searchWords(@Param("searchTerm") String searchTerm);
 
-    @Query(value = "SELECT * FROM vocabulary_words ORDER BY RAND() LIMIT :count", nativeQuery = true)
+    // Uses RANDOM() which works for both H2 and PostgreSQL
+    @Query(value = "SELECT * FROM vocabulary_words ORDER BY RANDOM() LIMIT :count", nativeQuery = true)
     List<VocabularyWord> findRandomWords(@Param("count") int count);
 }
 

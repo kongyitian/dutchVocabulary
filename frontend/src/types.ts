@@ -18,6 +18,7 @@ export interface QuizQuestion {
   difficulty: string;
   pronunciation?: string;
   example?: string;
+  options?: string[];
 }
 
 export interface QuizAnswer {
@@ -43,4 +44,35 @@ export interface Statistics {
   overallSuccessRate: number;
   wordsToReview: number;
 }
+
+export interface AuthResponse {
+  token?: string;
+  username?: string;
+  displayName?: string;
+  message?: string;
+}
+
+export interface Achievement {
+  id: number;
+  achievementType: string;
+  title: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+}
+
+export interface DailyStreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  totalDaysPracticed: number;
+  lastPracticeDate?: string;
+  practicedToday: boolean;
+}
+
+export interface User {
+  username: string;
+  displayName: string;
+}
+
+
 

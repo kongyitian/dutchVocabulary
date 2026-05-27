@@ -12,6 +12,7 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations, 
 - **Web Frontend**: Built-in responsive Duolingo-style web UI
 - **Achievements System**: Earn badges for streaks and milestones
 - **Daily Streaks**: Track consecutive days of practice
+- **User Authentication**: JWT-based authentication
 - **Kafka Integration**: Event streaming for quiz analytics (optional)
 
 ## Quick Start
@@ -19,26 +20,33 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations, 
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.6+
-- Docker (for Kafka)
+- Docker (for PostgreSQL and Kafka)
 
-### Run Kafka with Docker
+### Run with Docker (PostgreSQL)
 
 ```bash
-# Start Kafka and Zookeeper
-docker-compose up -d
+# Start PostgreSQL (and optionally Kafka)
+docker-compose up -d postgres
+
+# Run the application with PostgreSQL profile
+./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+### Run with H2 (Development)
+
+```bash
+# Run the application with H2 in-memory database (default)
+./mvnw spring-boot:run
+```
+
+### Run Kafka (Optional)
+
+```bash
+# Start Kafka and Zookeeper for event streaming
+docker-compose up -d kafka zookeeper
 
 # Verify containers are running
 docker ps
-```
-
-### Run the Application
-
-```bash
-# Build the project
-./mvnw clean install
-
-# Run the application
-./mvnw spring-boot:run
 ```
 
 The application will be available at:
@@ -53,12 +61,56 @@ Simply open http://localhost:8080 in your browser to access the interactive Dutc
 - 🏆 **Achievements** - Earn badges for milestones (5-streak, 10-streak, word mastery, etc.)
 - 🔥 **Daily Streaks** - Track consecutive days of practice
 - 🎯 **Practice** - Take quizzes (random or smart/spaced repetition)
-- 🎯 **Practice** - Take quizzes (random or smart/spaced repetition)
 - 📚 **Word List** - Browse and search all vocabulary words
 
-![Dashboard](docs/dashboard.png)
+## Running Tests
+
+```bash
+# Run all tests
+./mvnw test
+
+# Run tests with coverage report
+./mvnw test jacoco:report
+```
+
+## Database Configuration
+
+### H2 (Development - Default)
+Data stored in memory, lost on restart.
+
+Access H2 Console: http://localhost:8080/h2-console
+- JDBC URL: `jdbc:h2:mem:dutchvocabulary`
+- Username: `sa`
+- Password: (leave empty)
+
+### PostgreSQL (Production)
+For production, use the `postgres` profile:
+
+```bash
+# Using environment variables
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=dutchvocabulary
+export DB_USERNAME=postgres
+export DB_PASSWORD=postgres
+
+./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+Or start PostgreSQL with Docker:
+```bash
+docker-compose up -d postgres
+```
 
 ## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login and get JWT token |
+| GET | `/api/auth/me` | Get current user info |
 
 ### Vocabulary Words
 
@@ -85,50 +137,13 @@ Simply open http://localhost:8080 in your browser to access the interactive Dutc
 | POST | `/api/quiz/submit` | Submit multiple answers |
 | GET | `/api/quiz/statistics` | Get learning statistics |
 
-## Example Usage
+### Achievements
 
-### Add a new word
-```bash
-curl -X POST http://localhost:8080/api/words \
-  -H "Content-Type: application/json" \
-  -d '{
-    "dutch": "appel",
-    "english": "apple",
-    "category": "nouns",
-    "difficulty": "EASY",
-    "example": "Ik eet een appel.",
-    "exampleTranslation": "I eat an apple."
-  }'
-```
-
-### Get a quiz
-```bash
-curl http://localhost:8080/api/quiz?count=5
-```
-
-### Submit an answer
-```bash
-curl -X POST http://localhost:8080/api/quiz/answer \
-  -H "Content-Type: application/json" \
-  -d '{
-    "wordId": 1,
-    "answer": "hello"
-  }'
-```
-
-### Get statistics
-```bash
-curl http://localhost:8080/api/quiz/statistics
-```
-
-## Database
-
-The application uses H2 in-memory database for development. Data is persisted in `./data/dutchvocabulary`.
-
-Access H2 Console: http://localhost:8080/h2-console
-- JDBC URL: `jdbc:h2:file:./data/dutchvocabulary`
-- Username: `sa`
-- Password: (leave empty)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/achievements` | Get user achievements |
+| GET | `/api/achievements/streak` | Get daily streak info |
+| GET | `/api/achievements/summary` | Get achievement summary |
 
 ## Project Structure
 
@@ -136,33 +151,34 @@ Access H2 Console: http://localhost:8080/h2-console
 src/main/java/com/dutchvocabulary/
 ├── DutchVocabularyApplication.java
 ├── controller/
+│   ├── AuthController.java
 │   ├── VocabularyController.java
-│   └── QuizController.java
+│   ├── QuizController.java
+│   └── AchievementController.java
 ├── service/
 │   ├── VocabularyService.java
-│   └── QuizService.java
+│   ├── QuizService.java
+│   └── AchievementService.java
 ├── repository/
 │   ├── VocabularyWordRepository.java
-│   └── LearningProgressRepository.java
+│   ├── LearningProgressRepository.java
+│   ├── UserRepository.java
+│   └── AchievementRepository.java
 ├── model/
 │   ├── VocabularyWord.java
 │   ├── LearningProgress.java
-│   └── Difficulty.java
+│   ├── User.java
+│   ├── Achievement.java
+│   └── DailyStreak.java
+├── security/
+│   ├── SecurityConfig.java
+│   ├── JwtUtils.java
+│   └── JwtAuthenticationFilter.java
+├── kafka/
+│   └── QuizEventProducer.java
 └── dto/
-    ├── VocabularyWordDTO.java
-    ├── QuizQuestionDTO.java
-    ├── QuizAnswerDTO.java
-    ├── QuizResultDTO.java
-    └── StatisticsDTO.java
+    └── ... (DTOs)
 ```
-
-## Next Steps
-
-- [x] Add user authentication (Spring Security)
-- [x] Add Kafka event streaming
-- [ ] Implement audio pronunciation
-- [ ] Add more vocabulary categories
-- [ ] Export/import vocabulary lists
 
 ## Kafka Events
 
@@ -174,16 +190,20 @@ When users answer quiz questions, events are published to Kafka topics:
 | `quiz-attempts` | Every quiz answer (correct/incorrect, streak, success rate) |
 | `achievements` | Achievement unlocks (FIRST_CORRECT, STREAK_5, STREAK_10, WORD_MASTERED) |
 
-### Sample Log Output
-```
-📤 Sending quiz attempt event: userId=1, wordId=5, correct=true
-📊 [Analytics] Quiz attempt received:
-   User: john | Word: hallo (hello) | Answer: hello | Correct: ✅
-   Streak: 5 | Success Rate: 85.0%
-🏆 [Achievement] john earned: STREAK_5
-   Message: Amazing! 5 correct answers in a row! 🔥
-```
-
 ### Running Without Kafka
 The app will still work without Kafka - events will simply not be published (with a warning log).
 
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | PostgreSQL host | localhost |
+| `DB_PORT` | PostgreSQL port | 5432 |
+| `DB_NAME` | Database name | dutchvocabulary |
+| `DB_USERNAME` | Database username | postgres |
+| `DB_PASSWORD` | Database password | postgres |
+| `JWT_SECRET` | JWT signing key | (hardcoded for dev) |
+
+## License
+
+MIT License
