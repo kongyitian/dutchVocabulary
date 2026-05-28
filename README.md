@@ -220,6 +220,8 @@ The application includes **4,786+ Dutch words** with English translations:
 2. **Wiktionary Frequency List** (4,360 words) - Automatically imported from the official Dutch frequency list
    - Most common 4,622 Dutch words
    - Frequency-based difficulty assignment
+   - **979 words with English translations (20%)** using 841-word translation dictionary
+   - Best coverage for A1-A2 levels (most common words)
    - See [WIKTIONARY_IMPORT.md](WIKTIONARY_IMPORT.md) for details
 
 ### Difficulty Distribution
