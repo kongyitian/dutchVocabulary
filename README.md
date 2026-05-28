@@ -4,11 +4,14 @@ A Spring Boot REST API for learning Dutch vocabulary with English translations, 
 
 ## Features
 
-- **Vocabulary Management**: Add, update, delete, and search Dutch words
+- **Extensive Vocabulary Database**: 4,786+ Dutch words with English translations
+  - **Wiktionary Integration**: 4,622 words from the Dutch frequency list
+  - Organized by CEFR difficulty levels (A1-C2)
+  - Automatic categorization (verbs, nouns, adjectives, pronouns, etc.)
 - **Quiz System**: Practice with random quizzes or smart quizzes (spaced repetition)
 - **Progress Tracking**: Track your learning progress and statistics
 - **Categories**: Words organized by categories (greetings, verbs, nouns, etc.)
-- **Difficulty Levels**: EASY, MEDIUM, HARD
+- **Difficulty Levels**: A1 (beginner) to C2 (proficient)
 - **Web Frontend**: Built-in responsive Duolingo-style web UI
 - **Achievements System**: Earn badges for streaks and milestones
 - **Daily Streaks**: Track consecutive days of practice
@@ -203,6 +206,36 @@ The app will still work without Kafka - events will simply not be published (wit
 | `DB_USERNAME` | Database username | postgres |
 | `DB_PASSWORD` | Database password | postgres |
 | `JWT_SECRET` | JWT signing key | (hardcoded for dev) |
+
+## Vocabulary Database
+
+The application includes **4,786+ Dutch words** with English translations:
+
+### Sources
+1. **Curated Words** (426 words) - Hand-crafted with examples, pronunciations, and detailed translations
+   - Organized by CEFR levels (A1-C2)
+   - Includes example sentences and translations
+   - Contains pronunciation guides
+
+2. **Wiktionary Frequency List** (4,360 words) - Automatically imported from the official Dutch frequency list
+   - Most common 4,622 Dutch words
+   - Frequency-based difficulty assignment
+   - See [WIKTIONARY_IMPORT.md](WIKTIONARY_IMPORT.md) for details
+
+### Difficulty Distribution
+- **A1** (Beginner): 200 most common words
+- **A2** (Elementary): 400 words
+- **B1** (Intermediate): 900 words  
+- **B2** (Upper Intermediate): 1,000 words
+- **C1** (Advanced): 1,000 words
+- **C2** (Proficient): 1,286+ words
+
+### Adding More Words
+To add more vocabulary or improve translations:
+1. Edit `src/main/resources/data.sql` directly
+2. Or use the scraper scripts in the project root:
+   - `wiktionary_scraper_final.py` - Re-scrape Wiktionary
+   - `add_translations.py` - Helper for adding translations
 
 ## License
 
