@@ -34,12 +34,17 @@ const Quiz: React.FC<Props> = ({ onBack }) => {
 
   const startQuiz = async (smart: boolean = false) => {
     setLoading(true);
+    setError(null);
     try {
       let quizQuestions: QuizQuestion[];
       if (smart) {
         quizQuestions = await api.getSmartQuiz(10);
       } else {
         quizQuestions = await api.getQuiz(10, selectedCategory || undefined);
+      }
+      if (quizQuestions.length === 0) {
+        setError('No quiz questions available. Try a different category.');
+        return;
       }
       setQuestions(quizQuestions);
       setQuizStarted(true);
@@ -49,6 +54,7 @@ const Quiz: React.FC<Props> = ({ onBack }) => {
       setQuizComplete(false);
     } catch (error) {
       console.error('Failed to load quiz:', error);
+      setError('Failed to load quiz. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -117,6 +123,19 @@ const Quiz: React.FC<Props> = ({ onBack }) => {
     return (
       <div className="card quiz-card">
         <h2 style={{ marginBottom: '30px', color: '#333' }}>🎯 Start a Quiz</h2>
+
+        {error && (
+          <div style={{
+            background: '#f8d7da',
+            color: '#721c24',
+            padding: '12px 15px',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
 
         <div style={{ marginBottom: '30px' }}>
           <label style={{ display: 'block', marginBottom: '10px', color: '#666' }}>

@@ -44,7 +44,7 @@ public class VocabularyWord {
     @Enumerated(EnumType.STRING)
     @Column
     @Builder.Default
-    private Difficulty difficulty = Difficulty.MEDIUM;
+    private Difficulty difficulty = Difficulty.A1;
 
     @Column
     private String pronunciation;  // Optional pronunciation guide
@@ -62,4 +62,5 @@ public class VocabularyWord {
         this.updatedAt = LocalDateTime.now();
     }
 }
+
 

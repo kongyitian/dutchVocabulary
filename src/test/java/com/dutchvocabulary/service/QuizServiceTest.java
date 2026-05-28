@@ -75,7 +75,7 @@ class QuizServiceTest {
                 .dutch("hallo")
                 .english("hello")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .example("Hallo!")
                 .build();
 
@@ -84,7 +84,7 @@ class QuizServiceTest {
                 .dutch("goedemorgen")
                 .english("good morning")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build();
 
         testWord3 = VocabularyWord.builder()
@@ -92,7 +92,7 @@ class QuizServiceTest {
                 .dutch("eten")
                 .english("to eat")
                 .category("verbs")
-                .difficulty(Difficulty.MEDIUM)
+                .difficulty(Difficulty.B1)
                 .build();
 
         testUser = User.builder()
@@ -149,10 +149,10 @@ class QuizServiceTest {
         List<VocabularyWord> allWords = Arrays.asList(testWord1, testWord2, testWord3);
         when(wordRepository.findAll()).thenReturn(allWords);
 
-        List<QuizQuestionDTO> result = quizService.generateQuiz(3, null, "EASY");
+        List<QuizQuestionDTO> result = quizService.generateQuiz(3, null, "A1");
 
         // All questions should be EASY difficulty
-        result.forEach(q -> assertThat(q.getDifficulty()).isEqualTo("EASY"));
+        result.forEach(q -> assertThat(q.getDifficulty()).isEqualTo("A1"));
     }
 
     @Test

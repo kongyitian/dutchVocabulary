@@ -49,7 +49,7 @@ public class VocabularyService {
                 .example(dto.getExample())
                 .exampleTranslation(dto.getExampleTranslation())
                 .category(dto.getCategory())
-                .difficulty(dto.getDifficulty() != null ? dto.getDifficulty() : Difficulty.MEDIUM)
+                .difficulty(dto.getDifficulty() != null ? dto.getDifficulty() : Difficulty.A1)
                 .pronunciation(dto.getPronunciation())
                 .build();
         return wordRepository.save(word);
@@ -84,4 +84,5 @@ public class VocabularyService {
         return wordRepository.findRandomWords(count);
     }
 }
+
 

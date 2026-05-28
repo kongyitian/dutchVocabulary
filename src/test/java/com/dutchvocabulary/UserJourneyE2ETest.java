@@ -478,10 +478,10 @@ class UserJourneyE2ETest {
         // Start with EASY words
         MvcResult easyQuiz = mockMvc.perform(get("/api/quiz")
                         .param("count", "3")
-                        .param("difficulty", "EASY")
+                        .param("difficulty", "A1")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("EASY"))))
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("A1"))))
                 .andReturn();
 
         List<QuizQuestionDTO> easyQuestions = objectMapper.readValue(
@@ -507,16 +507,16 @@ class UserJourneyE2ETest {
         // Try MEDIUM difficulty
         mockMvc.perform(get("/api/quiz")
                         .param("count", "3")
-                        .param("difficulty", "MEDIUM")
+                        .param("difficulty", "B1")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("MEDIUM"))));
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("B1"))));
 
         // User can also filter by both category and difficulty
         mockMvc.perform(get("/api/words/difficulty/HARD")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("HARD"))));
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("C2"))));
     }
 
     // ========================================

@@ -154,7 +154,7 @@ class PostgreSQLIntegrationTest {
                 .dutch("postgres_woord")
                 .english("postgres_word")
                 .category("test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build();
 
         MvcResult createResult = mockMvc.perform(post("/api/words")
@@ -179,7 +179,7 @@ class PostgreSQLIntegrationTest {
                 .dutch("updated_postgres")
                 .english("updated_postgres")
                 .category("test")
-                .difficulty(Difficulty.HARD)
+                .difficulty(Difficulty.C2)
                 .build();
 
         mockMvc.perform(put("/api/words/" + created.getId())
@@ -188,7 +188,7 @@ class PostgreSQLIntegrationTest {
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dutch", is("updated_postgres")))
-                .andExpect(jsonPath("$.difficulty", is("HARD")));
+                .andExpect(jsonPath("$.difficulty", is("C2")));
 
         // Delete
         mockMvc.perform(delete("/api/words/" + created.getId())
@@ -303,7 +303,7 @@ class PostgreSQLIntegrationTest {
                     .dutch("batch_woord_" + i)
                     .english("batch_word_" + i)
                     .category("batch_test")
-                    .difficulty(Difficulty.MEDIUM)
+                    .difficulty(Difficulty.B1)
                     .build();
 
             mockMvc.perform(post("/api/words")
@@ -402,7 +402,7 @@ class PostgreSQLIntegrationTest {
                     .dutch("indexed_woord_" + i)
                     .english("indexed_word_" + i)
                     .category("indexed_test")
-                    .difficulty(Difficulty.EASY)
+                    .difficulty(Difficulty.A1)
                     .build();
 
             mockMvc.perform(post("/api/words")
@@ -438,7 +438,7 @@ class PostgreSQLIntegrationTest {
                 .dutch("") // Empty should fail validation
                 .english("test")
                 .category("test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build();
 
         mockMvc.perform(post("/api/words")
@@ -460,7 +460,7 @@ class PostgreSQLIntegrationTest {
                         .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThan(0))))
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("EASY"))));
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("A1"))));
 
         mockMvc.perform(get("/api/words/difficulty/MEDIUM")
                         .header("Authorization", "Bearer " + authToken))
@@ -530,7 +530,7 @@ class PostgreSQLIntegrationTest {
                 .dutch("null_test_woord")
                 .english("null_test_word")
                 .category("null_test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 // example, example_translation, pronunciation are null
                 .build();
 
@@ -563,7 +563,7 @@ class PostgreSQLIntegrationTest {
                 .example(longExample)
                 .exampleTranslation("This is a very long example sentence." .repeat(20))
                 .category("large_text_test")
-                .difficulty(Difficulty.MEDIUM)
+                .difficulty(Difficulty.B1)
                 .build();
 
         MvcResult result = mockMvc.perform(post("/api/words")

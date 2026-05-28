@@ -36,35 +36,35 @@ class VocabularyWordRepositoryTest {
                 .dutch("hallo")
                 .english("hello")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build());
 
         repository.save(VocabularyWord.builder()
                 .dutch("tot ziens")
                 .english("goodbye")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build());
 
         repository.save(VocabularyWord.builder()
                 .dutch("zijn")
                 .english("to be")
                 .category("verbs")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build());
 
         repository.save(VocabularyWord.builder()
                 .dutch("kunnen")
                 .english("can")
                 .category("verbs")
-                .difficulty(Difficulty.MEDIUM)
+                .difficulty(Difficulty.B1)
                 .build());
 
         repository.save(VocabularyWord.builder()
                 .dutch("begrijpen")
                 .english("to understand")
                 .category("verbs")
-                .difficulty(Difficulty.HARD)
+                .difficulty(Difficulty.C2)
                 .build());
     }
 
@@ -91,19 +91,19 @@ class VocabularyWordRepositoryTest {
     @Order(3)
     @DisplayName("findByDifficulty should filter by difficulty level")
     void findByDifficulty_ShouldFilterByDifficulty() {
-        List<VocabularyWord> easyWords = repository.findByDifficulty(Difficulty.EASY);
-        List<VocabularyWord> hardWords = repository.findByDifficulty(Difficulty.HARD);
+        List<VocabularyWord> easyWords = repository.findByDifficulty(Difficulty.A1);
+        List<VocabularyWord> hardWords = repository.findByDifficulty(Difficulty.C2);
 
         assertThat(easyWords).hasSize(3);
         assertThat(hardWords).hasSize(1);
-        assertThat(easyWords).allMatch(w -> w.getDifficulty() == Difficulty.EASY);
+        assertThat(easyWords).allMatch(w -> w.getDifficulty() == Difficulty.A1);
     }
 
     @Test
     @Order(4)
     @DisplayName("findByCategoryAndDifficulty should combine filters")
     void findByCategoryAndDifficulty_ShouldCombineFilters() {
-        List<VocabularyWord> easyVerbs = repository.findByCategoryAndDifficulty("verbs", Difficulty.EASY);
+        List<VocabularyWord> easyVerbs = repository.findByCategoryAndDifficulty("verbs", Difficulty.A1);
 
         assertThat(easyVerbs).hasSize(1);
         assertThat(easyVerbs.get(0).getDutch()).isEqualTo("zijn");
@@ -183,7 +183,7 @@ class VocabularyWordRepositoryTest {
                 .dutch("nieuw")
                 .english("new")
                 .category("adjectives")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .example("Dit is nieuw.")
                 .exampleTranslation("This is new.")
                 .pronunciation("neew")
@@ -198,7 +198,7 @@ class VocabularyWordRepositoryTest {
                     assertThat(w.getDutch()).isEqualTo("nieuw");
                     assertThat(w.getEnglish()).isEqualTo("new");
                     assertThat(w.getCategory()).isEqualTo("adjectives");
-                    assertThat(w.getDifficulty()).isEqualTo(Difficulty.EASY);
+                    assertThat(w.getDifficulty()).isEqualTo(Difficulty.A1);
                     assertThat(w.getExample()).isEqualTo("Dit is nieuw.");
                     assertThat(w.getExampleTranslation()).isEqualTo("This is new.");
                     assertThat(w.getPronunciation()).isEqualTo("neew");

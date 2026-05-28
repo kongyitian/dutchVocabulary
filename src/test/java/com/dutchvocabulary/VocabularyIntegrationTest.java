@@ -114,11 +114,11 @@ class VocabularyIntegrationTest {
     @Order(5)
     @DisplayName("GET /api/words/difficulty/{difficulty} - Should filter by difficulty")
     void getWordsByDifficulty_ShouldReturnFilteredWords() throws Exception {
-        mockMvc.perform(get("/api/words/difficulty/EASY")
+        mockMvc.perform(get("/api/words/difficulty/A1")
                         .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThan(0))))
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("EASY"))));
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("A1"))));
     }
 
     @Test
@@ -153,7 +153,7 @@ class VocabularyIntegrationTest {
                 .dutch("test_woord")
                 .english("test_word")
                 .category("test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .example("Dit is een test woord.")
                 .exampleTranslation("This is a test word.")
                 .build();
@@ -180,14 +180,14 @@ class VocabularyIntegrationTest {
                 .dutch("update_test")
                 .english("update_test")
                 .category("test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build());
 
         VocabularyWordDTO updateDto = VocabularyWordDTO.builder()
                 .dutch("updated_dutch")
                 .english("updated_english")
                 .category("updated_category")
-                .difficulty(Difficulty.HARD)
+                .difficulty(Difficulty.C2)
                 .build();
 
         mockMvc.perform(put("/api/words/" + word.getId())
@@ -197,7 +197,7 @@ class VocabularyIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dutch", is("updated_dutch")))
                 .andExpect(jsonPath("$.english", is("updated_english")))
-                .andExpect(jsonPath("$.difficulty", is("HARD")));
+                .andExpect(jsonPath("$.difficulty", is("C2")));
     }
 
     @Test
@@ -209,7 +209,7 @@ class VocabularyIntegrationTest {
                 .dutch("delete_test")
                 .english("delete_test")
                 .category("test")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .build());
 
         Long wordId = word.getId();

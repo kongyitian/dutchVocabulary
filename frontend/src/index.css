@@ -362,6 +362,38 @@ body {
   font-weight: 500;
 }
 
+/* CEFR Level badges */
+.difficulty-badge.a1 {
+  background: #d4edda;
+  color: #155724;
+}
+
+.difficulty-badge.a2 {
+  background: #c3e6cb;
+  color: #155724;
+}
+
+.difficulty-badge.b1 {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.difficulty-badge.b2 {
+  background: #ffeeba;
+  color: #856404;
+}
+
+.difficulty-badge.c1 {
+  background: #f5c6cb;
+  color: #721c24;
+}
+
+.difficulty-badge.c2 {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Legacy difficulty badges (for backwards compatibility) */
 .difficulty-badge.easy {
   background: #d4edda;
   color: #155724;
@@ -431,5 +463,126 @@ body {
     padding: 10px;
     font-size: 0.9rem;
   }
+}
+
+/* Auth Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.auth-card h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.auth-card .form-group {
+  margin-bottom: 20px;
+}
+
+.auth-card label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.auth-card input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 25px;
+  color: #666;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: #764ba2;
+}
+
+.auth-features {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.auth-features h3 {
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.auth-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.auth-features li {
+  padding: 8px 0;
+  color: #666;
+}
+
+.loading-spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
 }
 

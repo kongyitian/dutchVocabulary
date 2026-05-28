@@ -102,10 +102,10 @@ class QuizIntegrationTest {
     void generateQuiz_WithDifficulty_ShouldFilterByDifficulty() throws Exception {
         mockMvc.perform(get("/api/quiz")
                         .param("count", "5")
-                        .param("difficulty", "EASY")
+                        .param("difficulty", "A1")
                         .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].difficulty", everyItem(is("EASY"))));
+                .andExpect(jsonPath("$[*].difficulty", everyItem(is("A1"))));
     }
 
     @Test

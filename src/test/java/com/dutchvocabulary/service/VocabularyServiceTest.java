@@ -40,7 +40,7 @@ class VocabularyServiceTest {
                 .dutch("hallo")
                 .english("hello")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .example("Hallo, hoe gaat het?")
                 .exampleTranslation("Hello, how are you?")
                 .pronunciation("hah-LOH")
@@ -50,7 +50,7 @@ class VocabularyServiceTest {
                 .dutch("goedemorgen")
                 .english("good morning")
                 .category("greetings")
-                .difficulty(Difficulty.EASY)
+                .difficulty(Difficulty.A1)
                 .example("Goedemorgen!")
                 .exampleTranslation("Good morning!")
                 .pronunciation("khoo-duh-MOR-khun")
@@ -107,12 +107,12 @@ class VocabularyServiceTest {
     @DisplayName("Should get words by difficulty")
     void getWordsByDifficulty_ShouldReturnMatchingWords() {
         List<VocabularyWord> words = Arrays.asList(testWord);
-        when(wordRepository.findByDifficulty(Difficulty.EASY)).thenReturn(words);
+        when(wordRepository.findByDifficulty(Difficulty.A1)).thenReturn(words);
 
-        List<VocabularyWord> result = vocabularyService.getWordsByDifficulty(Difficulty.EASY);
+        List<VocabularyWord> result = vocabularyService.getWordsByDifficulty(Difficulty.A1);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDifficulty()).isEqualTo(Difficulty.EASY);
+        assertThat(result.get(0).getDifficulty()).isEqualTo(Difficulty.A1);
     }
 
     @Test
@@ -175,7 +175,7 @@ class VocabularyServiceTest {
 
         VocabularyWord result = vocabularyService.createWord(dtoWithoutDifficulty);
 
-        assertThat(result.getDifficulty()).isEqualTo(Difficulty.MEDIUM);
+        assertThat(result.getDifficulty()).isEqualTo(Difficulty.B1);
     }
 
     @Test
